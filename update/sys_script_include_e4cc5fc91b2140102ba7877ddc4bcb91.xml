@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?><record_update table="sys_script_include">
+    <sys_script_include action="INSERT_OR_UPDATE">
+        <access>package_private</access>
+        <active>true</active>
+        <api_name>x_53417_at.FlatToNested</api_name>
+        <caller_access/>
+        <client_callable>false</client_callable>
+        <description/>
+        <name>FlatToNested</name>
+        <script><![CDATA[var FlatToNested = (function () {
+  'use strict';
+
+  /**
+   * Create a new FlatToNested object.
+   *
+   * @constructor
+   * @param {object} config The configuration object.
+   */
+  function FlatToNested(config) {
+    this.config = config = config || {};
+    this.config.id = config.id || 'id';
+    this.config.parent = config.parent || 'parent';
+    this.config.children = config.children || 'children';
+    this.config.options = config.options || { deleteParent: true };
+  }
+
+  /**
+   * Convert a hierarchy from flat to nested representation.
+   *
+   * @param {array} flat The array with the hierachy flat representation.
+   */
+  FlatToNested.prototype.convert = function (flat) {
+    var i, len, temp, roots, id, parent, nested, pendingChildOf, flatEl;
+    i = 0;
+    roots = [];
+    temp = {};
+    pendingChildOf = {};
+
+    for (i, len = flat.length; i < len; i++) {
+      flatEl = flat[i];
+      id = flatEl[this.config.id];
+      parent = flatEl[this.config.parent];
+      temp[id] = flatEl;
+      if (parent === undefined || parent === null) {
+        // Current object has no parent, so it's a root element.
+        roots.push(flatEl);
+      } else {
+        if (temp[parent] !== undefined) {
+          // Parent is already in temp, adding the current object to its children array.
+          initPush(this.config.children, temp[parent], flatEl);
+        } else {
+          // Parent for this object is not yet in temp, adding it to pendingChildOf.
+          initPush(parent, pendingChildOf, flatEl);
+        }
+        if (this.config.options.deleteParent) {
+          delete flatEl[this.config.parent];
+        }
+      }
+      if (pendingChildOf[id] !== undefined) {
+        // Current object has children pending for it. Adding these to the object.
+        multiInitPush(this.config.children, flatEl, pendingChildOf[id]);
+      }
+    }
+
+    if (roots.length === 1) {
+      nested = roots[0];
+    } else if (roots.length > 1) {
+      nested = {};
+      nested[this.config.children] = roots;
+    } else {
+      nested = {};
+    }
+    return nested;
+  };
+
+  function initPush(arrayName, obj, toPush) {
+    if (obj[arrayName] === undefined) {
+      obj[arrayName] = [];
+    }
+    obj[arrayName].push(toPush);
+  }
+
+  function multiInitPush(arrayName, obj, toPushArray) {
+    var len;
+    len = toPushArray.length;
+    if (obj[arrayName] === undefined) {
+      obj[arrayName] = [];
+    }
+    while (len-- > 0) {
+      obj[arrayName].push(toPushArray.shift());
+    }
+  }
+
+  return FlatToNested;
+})();]]></script>
+        <sys_class_name>sys_script_include</sys_class_name>
+        <sys_created_by>admin</sys_created_by>
+        <sys_created_on>2019-12-04 19:11:23</sys_created_on>
+        <sys_id>e4cc5fc91b2140102ba7877ddc4bcb91</sys_id>
+        <sys_mod_count>0</sys_mod_count>
+        <sys_name>FlatToNested</sys_name>
+        <sys_package display_value="AT" source="x_53417_at">c3623bb91bd900102ba7877ddc4bcbfc</sys_package>
+        <sys_policy>read</sys_policy>
+        <sys_scope display_value="AT">c3623bb91bd900102ba7877ddc4bcbfc</sys_scope>
+        <sys_update_name>sys_script_include_e4cc5fc91b2140102ba7877ddc4bcb91</sys_update_name>
+        <sys_updated_by>admin</sys_updated_by>
+        <sys_updated_on>2019-12-04 19:11:23</sys_updated_on>
+    </sys_script_include>
+</record_update>
